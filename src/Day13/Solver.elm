@@ -45,23 +45,16 @@ solve2 : String
 solve2 =
     case Day13.Input.input |> String.lines of
         _ :: bussIdsString :: [] ->
-            let
-                bussIdsWithOffset =
-                    String.split "," bussIdsString
-                        |> List.indexedMap Tuple.pair
-                        |> List.filterMap (\( i, v ) -> String.toInt v |> Maybe.map (Tuple.pair i))
-            in
-            List.map (\n -> List.take n bussIdsWithOffset) (List.range 1 (List.length bussIdsWithOffset))
+            String.split "," bussIdsString
+                |> List.indexedMap Tuple.pair
+                |> List.filterMap (\( i, v ) -> String.toInt v |> Maybe.map (Tuple.pair i))
+                |> List.Extra.inits
+                |> List.drop 1
                 |> List.foldl
                     (\lst ( prevSolution, stepSize ) ->
-                        let
-                            firstSolution =
-                                findSolution lst prevSolution stepSize
-
-                            secondSolution =
-                                findSolution lst (firstSolution + stepSize) stepSize
-                        in
-                        ( firstSolution, secondSolution - firstSolution )
+                        ( findSolution lst prevSolution stepSize
+                        , stepSize * (lst |> List.reverse |> List.head |> Maybe.map Tuple.second |> Maybe.withDefault 0)
+                        )
                     )
                     ( 0, 1 )
                 |> Tuple.first
